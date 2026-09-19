@@ -23,6 +23,28 @@ const file=route==='/404'?'dist/404.html':route==='/'?'dist/index.html':`dist${r
 await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,html);
 }
 const publicPaths=paths.filter(p=>p!=='/404');
-await fs.writeFile('dist/robots.txt',`User-agent: *\nAllow: /\n${origin?`Sitemap: ${origin}/sitemap.xml\n`:''}`);
-await fs.writeFile('dist/sitemap.xml',`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${origin?publicPaths.map(p=>`<url><loc>${origin}${p==='/'?'/':p+'/'}</loc></url>`).join(''):''}</urlset>`);
-console.log(`Pre-rendered ${paths.length} pages; ${origin?'production metadata for '+origin:'preview mode'}.`);
+const lastmod='2026-09-19';
+const urlLoc=p=>`${origin}${p==='/'?'/':`${p}/`}`;
+const sitemapUrls=publicPaths.map(p=>{
+  const isHome=p==='/'||p==='/en';
+  const isService=services.some(s=>'/'+s.slug===p);
+  const priority=p==='/'?'1.0':p==='/en'?'0.8':isService?'0.9':'0.6';
+  const changefreq=isHome?'weekly':'monthly';
+  const alts=origin&&isHome?`
+    <xhtml:link rel="alternate" hreflang="es" href="${origin}/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="${origin}/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${origin}/"/>`:'';
+  return `  <url>
+    <loc>${urlLoc(p)}</loc>${alts}
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>${changefreq}</changefreq>
+    <priority>${priority}</priority>
+  </url>`;
+}).join('\n');
+await fs.writeFile('dist/robots.txt',`User-agent: *\nAllow: /\nSitemap: ${origin?`${origin}/sitemap.xml`:'/sitemap.xml'}\n`);
+await fs.writeFile('dist/sitemap.xml',`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${origin?' xmlns:xhtml="http://www.w3.org/1999/xhtml"':''}>
+${sitemapUrls}
+</urlset>
+`);
+console.log(`Pre-rendered ${paths.length} pages and ${publicPaths.length} sitemap URLs; ${origin?'production metadata for '+origin:'preview mode'}.`);
