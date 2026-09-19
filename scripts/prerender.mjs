@@ -1,0 +1,28 @@
+import {build} from 'esbuild';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import React from 'react';
+import {renderToString} from 'react-dom/server';
+await build({entryPoints:['src/App.jsx'],outfile:'.build/ssr.mjs',bundle:true,platform:'node',format:'esm',packages:'external',jsx:'automatic'});
+const {default:App,paths,pageMeta}=await import('../.build/ssr.mjs');
+const {business,services}=await import('../src/data.js');
+const images=JSON.parse(await fs.readFile('src/images.json','utf8'));
+const template=await fs.readFile('dist/index.html','utf8');
+const originValue=process.env.SITE_URL||process.env.VITE_SITE_URL;
+const origin=originValue?new URL(originValue).origin:'';
+if(originValue&&!/^https:\/\//.test(originValue))throw new Error('SITE_URL must be an HTTPS URL.');
+if(!origin)console.warn('SITE_URL missing: building a noindex preview without canonical URLs. Set SITE_URL to your production HTTPS domain and rebuild to enable indexing.');
+const esc=s=>s.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;');
+for(const route of paths){const en=route==='/en';const meta=pageMeta(route);const notFound=route==='/404';const canonical=origin+(route==='/'?'/':route+'/');const img=`/images/${meta.image}-${images[meta.image].widths.at(-1)}.webp`;
+const organization={'@context':'https://schema.org','@type':'ProfessionalService',name:business.name,description:'Fotografía y vídeo de familia, embarazo y recién nacido en Cantabria, Bilbao y Bizkaia.',telephone:'+34644656260',email:business.email,areaServed:['Cantabria','Bilbao','Bizkaia'],sameAs:[business.instagram,business.youtube],...(origin?{url:origin+'/',image:origin+img,logo:origin+'/images/logo.png'}:{})};
+const service=services.find(s=>'/'+s.slug===route);if(service)organization.hasOfferCatalog={'@type':'OfferCatalog',name:service.name,itemListElement:[{'@type':'Offer',price:service.price,priceCurrency:'EUR',itemOffered:{'@type':'Service',name:service.name,description:service.description}}]};
+const indexing=origin&&!notFound?'index,follow,max-image-preview:large':'noindex,follow';
+const tags=`<title>${esc(meta.title)}</title><meta name="description" content="${esc(meta.description)}"/><meta name="robots" content="${indexing}"/><meta property="og:type" content="website"/><meta property="og:site_name" content="Venus Journey"/><meta property="og:locale" content="${en?'en_GB':'es_ES'}"/><meta property="og:title" content="${esc(meta.title)}"/><meta property="og:description" content="${esc(meta.description)}"/>${origin?`<link rel="canonical" href="${canonical}"/><meta property="og:url" content="${canonical}"/><meta property="og:image" content="${origin+img}"/><meta name="twitter:card" content="summary_large_image"/>`:''}${origin&&(route==='/'||en)?`<link rel="alternate" hreflang="es" href="${origin}/"/><link rel="alternate" hreflang="en" href="${origin}/en/"/><link rel="alternate" hreflang="x-default" href="${origin}/"/>`:''}<script type="application/ld+json">${JSON.stringify(organization).replaceAll('<','\\u003c')}</script>`;
+const html=template.replace('lang="es"',`lang="${en?'en':'es'}"`).replace('<!--seo-->',tags).replace('<!--app-->',renderToString(React.createElement(App,{path:route})));
+const file=route==='/404'?'dist/404.html':route==='/'?'dist/index.html':`dist${route}/index.html`;
+await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,html);
+}
+const publicPaths=paths.filter(p=>p!=='/404');
+await fs.writeFile('dist/robots.txt',`User-agent: *\nAllow: /\n${origin?`Sitemap: ${origin}/sitemap.xml\n`:''}`);
+await fs.writeFile('dist/sitemap.xml',`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${origin?publicPaths.map(p=>`<url><loc>${origin}${p==='/'?'/':p+'/'}</loc></url>`).join(''):''}</urlset>`);
+console.log(`Pre-rendered ${paths.length} pages; ${origin?'production metadata for '+origin:'preview mode'}.`);

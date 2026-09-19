@@ -1,0 +1,87 @@
+[
+  {
+    "source": "/en",
+    "target": "/en/",
+    "status": "301"
+  },
+  {
+    "source": "/en/",
+    "target": "/en/index.html",
+    "status": "200"
+  },
+  {
+    "source": "/fotografia-familiar",
+    "target": "/fotografia-familiar/",
+    "status": "301"
+  },
+  {
+    "source": "/fotografia-familiar/",
+    "target": "/fotografia-familiar/index.html",
+    "status": "200"
+  },
+  {
+    "source": "/fotografia-embarazo",
+    "target": "/fotografia-embarazo/",
+    "status": "301"
+  },
+  {
+    "source": "/fotografia-embarazo/",
+    "target": "/fotografia-embarazo/index.html",
+    "status": "200"
+  },
+  {
+    "source": "/fotografia-recien-nacido",
+    "target": "/fotografia-recien-nacido/",
+    "status": "301"
+  },
+  {
+    "source": "/fotografia-recien-nacido/",
+    "target": "/fotografia-recien-nacido/index.html",
+    "status": "200"
+  },
+  {
+    "source": "/video-familiar-bautizo",
+    "target": "/video-familiar-bautizo/",
+    "status": "301"
+  },
+  {
+    "source": "/video-familiar-bautizo/",
+    "target": "/video-familiar-bautizo/index.html",
+    "status": "200"
+  },
+  {
+    "source": "/olgayadelina",
+    "target": "/olgayadelina/",
+    "status": "301"
+  },
+  {
+    "source": "/olgayadelina/",
+    "target": "/olgayadelina/index.html",
+    "status": "200"
+  },
+  {
+    "source": "/javieraysergio",
+    "target": "/javieraysergio/",
+    "status": "301"
+  },
+  {
+    "source": "/javieraysergio/",
+    "target": "/javieraysergio/index.html",
+    "status": "200"
+  },
+  {
+    "source": "/garaziaitoramets",
+    "target": "/garaziaitoramets/",
+    "status": "301"
+  },
+  {
+    "source": "/garaziaitoramets/",
+    "target": "/garaziaitoramets/index.html",
+    "status": "200"
+  },
+  {
+    "source": "/<*>",
+    "target": "/404.html",
+    "status": "404"
+  }
+]
