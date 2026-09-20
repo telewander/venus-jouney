@@ -1,63 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://venusjourney.com/</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://venusjourney.com/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://venusjourney.com/en/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://venusjourney.com/"/>
-    <lastmod>2026-09-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <loc>https://www.venusjourney.com/</loc>
   </url>
   <url>
-    <loc>https://venusjourney.com/en/</loc>
-    <xhtml:link rel="alternate" hreflang="es" href="https://venusjourney.com/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://venusjourney.com/en/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://venusjourney.com/"/>
-    <lastmod>2026-09-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <loc>https://www.venusjourney.com/en/</loc>
   </url>
   <url>
-    <loc>https://venusjourney.com/fotografia-familiar/</loc>
-    <lastmod>2026-09-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <loc>https://www.venusjourney.com/fotografia-familiar/</loc>
   </url>
   <url>
-    <loc>https://venusjourney.com/fotografia-embarazo/</loc>
-    <lastmod>2026-09-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <loc>https://www.venusjourney.com/fotografia-embarazo/</loc>
   </url>
   <url>
-    <loc>https://venusjourney.com/fotografia-recien-nacido/</loc>
-    <lastmod>2026-09-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <loc>https://www.venusjourney.com/fotografia-recien-nacido/</loc>
   </url>
   <url>
-    <loc>https://venusjourney.com/video-familiar-bautizo/</loc>
-    <lastmod>2026-09-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
+    <loc>https://www.venusjourney.com/video-familiar-bautizo/</loc>
   </url>
   <url>
-    <loc>https://venusjourney.com/olgayadelina/</loc>
-    <lastmod>2026-09-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <loc>https://www.venusjourney.com/olgayadelina/</loc>
   </url>
   <url>
-    <loc>https://venusjourney.com/javieraysergio/</loc>
-    <lastmod>2026-09-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <loc>https://www.venusjourney.com/javieraysergio/</loc>
   </url>
   <url>
-    <loc>https://venusjourney.com/garaziaitoramets/</loc>
-    <lastmod>2026-09-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <loc>https://www.venusjourney.com/garaziaitoramets/</loc>
   </url>
 </urlset>

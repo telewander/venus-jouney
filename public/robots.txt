@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://venusjourney.com/sitemap.xml
+Sitemap: https://www.venusjourney.com/sitemap.xml

@@ -3,47 +3,33 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import React from 'react';
 import {renderToString} from 'react-dom/server';
+import {SITE_URL, originFrom, pageUrl, assetUrl} from '../src/site.js';
 await build({entryPoints:['src/App.jsx'],outfile:'.build/ssr.mjs',bundle:true,platform:'node',format:'esm',packages:'external',jsx:'automatic'});
 const {default:App,paths,pageMeta}=await import('../.build/ssr.mjs');
 const {business,services}=await import('../src/data.js');
 const images=JSON.parse(await fs.readFile('src/images.json','utf8'));
 const template=await fs.readFile('dist/index.html','utf8');
-const originValue=process.env.SITE_URL||process.env.VITE_SITE_URL||'https://venusjourney.com';
-if(!/^https:\/\//.test(originValue))throw new Error('SITE_URL must be an HTTPS URL.');
-const origin=new URL(originValue).origin;
+const origin=originFrom(process.env.SITE_URL||process.env.VITE_SITE_URL||SITE_URL);
 const esc=s=>s.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;');
-for(const route of paths){const en=route==='/en';const meta=pageMeta(route);const notFound=route==='/404';const canonical=origin+(route==='/'?'/':route+'/');const img=`/images/${meta.image}-${images[meta.image].widths.at(-1)}.webp`;
-const organization={'@context':'https://schema.org','@type':'ProfessionalService',name:business.name,description:'Fotografía y vídeo de familia, embarazo y recién nacido en Cantabria, Bilbao y Bizkaia.',telephone:'+34644656260',email:business.email,areaServed:['Cantabria','Bilbao','Bizkaia'],sameAs:[business.instagram,business.youtube],...(origin?{url:origin+'/',image:origin+img,logo:origin+'/images/logo.png'}:{})};
-const service=services.find(s=>'/'+s.slug===route);if(service)organization.hasOfferCatalog={'@type':'OfferCatalog',name:service.name,itemListElement:[{'@type':'Offer',price:service.price,priceCurrency:'EUR',itemOffered:{'@type':'Service',name:service.name,description:service.description}}]};
-const indexing=origin&&!notFound?'index,follow,max-image-preview:large':'noindex,follow';
-const tags=`<title>${esc(meta.title)}</title><meta name="description" content="${esc(meta.description)}"/><meta name="robots" content="${indexing}"/><meta property="og:type" content="website"/><meta property="og:site_name" content="Venus Journey"/><meta property="og:locale" content="${en?'en_GB':'es_ES'}"/><meta property="og:title" content="${esc(meta.title)}"/><meta property="og:description" content="${esc(meta.description)}"/>${origin?`<link rel="canonical" href="${canonical}"/><meta property="og:url" content="${canonical}"/><meta property="og:image" content="${origin+img}"/><meta name="twitter:card" content="summary_large_image"/>`:''}${origin&&(route==='/'||en)?`<link rel="alternate" hreflang="es" href="${origin}/"/><link rel="alternate" hreflang="en" href="${origin}/en/"/><link rel="alternate" hreflang="x-default" href="${origin}/"/>`:''}<script type="application/ld+json">${JSON.stringify(organization).replaceAll('<','\\u003c')}</script>`;
-const html=template.replace('lang="es"',`lang="${en?'en':'es'}"`).replace('<!--seo-->',tags).replace('<!--app-->',renderToString(React.createElement(App,{path:route})));
-const file=route==='/404'?'dist/404.html':route==='/'?'dist/index.html':`dist${route}/index.html`;
-await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,html);
+for(const route of paths){
+  const en=route==='/en';
+  const meta=pageMeta(route);
+  const notFound=route==='/404';
+  const canonical=notFound?pageUrl('/',origin):pageUrl(route,origin);
+  const img=assetUrl(`/images/${meta.image}-${images[meta.image].widths.at(-1)}.webp`,origin);
+  const organization={'@context':'https://schema.org','@type':'ProfessionalService',name:business.name,description:'Fotografía y vídeo de familia, embarazo y recién nacido en Cantabria, Bilbao y Bizkaia.',telephone:'+34644656260',email:business.email,url:pageUrl('/',origin),image:img,logo:assetUrl('/images/logo.png',origin),areaServed:['Cantabria','Bilbao','Bizkaia'],sameAs:[business.instagram,business.youtube]};
+  const service=services.find(s=>'/'+s.slug===route);
+  if(service)organization.hasOfferCatalog={'@type':'OfferCatalog',name:service.name,itemListElement:[{'@type':'Offer',price:service.price,priceCurrency:'EUR',itemOffered:{'@type':'Service',name:service.name,description:service.description}}]};
+  const indexing=notFound?'noindex,follow':'index,follow,max-image-preview:large';
+  const hreflang=route==='/'||en?`<link rel="alternate" hreflang="es" href="${pageUrl('/',origin)}"/><link rel="alternate" hreflang="en" href="${pageUrl('/en',origin)}"/><link rel="alternate" hreflang="x-default" href="${pageUrl('/',origin)}"/>`:'';
+  const tags=`<title>${esc(meta.title)}</title><meta name="description" content="${esc(meta.description)}"/><meta name="robots" content="${indexing}"/><meta property="og:type" content="website"/><meta property="og:site_name" content="Venus Journey"/><meta property="og:locale" content="${en?'en_GB':'es_ES'}"/><meta property="og:title" content="${esc(meta.title)}"/><meta property="og:description" content="${esc(meta.description)}"/><link rel="canonical" href="${canonical}"/><meta property="og:url" content="${canonical}"/><meta property="og:image" content="${img}"/><meta name="twitter:card" content="summary_large_image"/>${hreflang}<script type="application/ld+json">${JSON.stringify(organization).replaceAll('<','\\u003c')}</script>`;
+  const html=template.replace('lang="es"',`lang="${en?'en':'es'}"`).replace('<!--seo-->',tags).replace('<!--app-->',renderToString(React.createElement(App,{path:route})));
+  const file=route==='/404'?'dist/404.html':route==='/'?'dist/index.html':`dist${route}/index.html`;
+  await fs.mkdir(path.dirname(file),{recursive:true});
+  await fs.writeFile(file,html);
 }
 const publicPaths=paths.filter(p=>p!=='/404');
-const lastmod='2026-09-20';
-const urlLoc=p=>`${origin}${p==='/'?'/':`${p}/`}`;
-const sitemapUrls=publicPaths.map(p=>{
-  const isHome=p==='/'||p==='/en';
-  const isService=services.some(s=>'/'+s.slug===p);
-  const priority=p==='/'?'1.0':p==='/en'?'0.8':isService?'0.9':'0.6';
-  const changefreq=isHome?'weekly':'monthly';
-  const alts=isHome?`
-    <xhtml:link rel="alternate" hreflang="es" href="${origin}/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="${origin}/en/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="${origin}/"/>`:'';
-  return `  <url>
-    <loc>${urlLoc(p)}</loc>${alts}
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>${changefreq}</changefreq>
-    <priority>${priority}</priority>
-  </url>`;
-}).join('\n');
-await fs.writeFile('dist/robots.txt',`User-agent: *\nAllow: /\nSitemap: ${origin}/sitemap.xml\n`);
-await fs.writeFile('dist/sitemap.xml',`<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
-${sitemapUrls}
-</urlset>
-`);
-console.log(`Pre-rendered ${paths.length} pages and ${publicPaths.length} sitemap URLs; ${origin?'production metadata for '+origin:'preview mode'}.`);
+const sitemapUrls=publicPaths.map(p=>`  <url>\n    <loc>${pageUrl(p,origin)}</loc>\n  </url>`).join('\n');
+await fs.writeFile('dist/robots.txt',`User-agent: *\nAllow: /\nSitemap: ${assetUrl('/sitemap.xml',origin)}\n`);
+await fs.writeFile('dist/sitemap.xml',`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapUrls}\n</urlset>\n`);
+console.log(`Pre-rendered ${paths.length} pages and ${publicPaths.length} sitemap URLs for ${origin}.`);
