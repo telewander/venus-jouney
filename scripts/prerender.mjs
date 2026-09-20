@@ -8,10 +8,9 @@ const {default:App,paths,pageMeta}=await import('../.build/ssr.mjs');
 const {business,services}=await import('../src/data.js');
 const images=JSON.parse(await fs.readFile('src/images.json','utf8'));
 const template=await fs.readFile('dist/index.html','utf8');
-const originValue=process.env.SITE_URL||process.env.VITE_SITE_URL;
-const origin=originValue?new URL(originValue).origin:'';
-if(originValue&&!/^https:\/\//.test(originValue))throw new Error('SITE_URL must be an HTTPS URL.');
-if(!origin)console.warn('SITE_URL missing: building a noindex preview without canonical URLs. Set SITE_URL to your production HTTPS domain and rebuild to enable indexing.');
+const originValue=process.env.SITE_URL||process.env.VITE_SITE_URL||'https://venusjourney.com';
+if(!/^https:\/\//.test(originValue))throw new Error('SITE_URL must be an HTTPS URL.');
+const origin=new URL(originValue).origin;
 const esc=s=>s.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;');
 for(const route of paths){const en=route==='/en';const meta=pageMeta(route);const notFound=route==='/404';const canonical=origin+(route==='/'?'/':route+'/');const img=`/images/${meta.image}-${images[meta.image].widths.at(-1)}.webp`;
 const organization={'@context':'https://schema.org','@type':'ProfessionalService',name:business.name,description:'Fotografía y vídeo de familia, embarazo y recién nacido en Cantabria, Bilbao y Bizkaia.',telephone:'+34644656260',email:business.email,areaServed:['Cantabria','Bilbao','Bizkaia'],sameAs:[business.instagram,business.youtube],...(origin?{url:origin+'/',image:origin+img,logo:origin+'/images/logo.png'}:{})};
@@ -23,14 +22,14 @@ const file=route==='/404'?'dist/404.html':route==='/'?'dist/index.html':`dist${r
 await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,html);
 }
 const publicPaths=paths.filter(p=>p!=='/404');
-const lastmod='2026-09-19';
+const lastmod='2026-09-20';
 const urlLoc=p=>`${origin}${p==='/'?'/':`${p}/`}`;
 const sitemapUrls=publicPaths.map(p=>{
   const isHome=p==='/'||p==='/en';
   const isService=services.some(s=>'/'+s.slug===p);
   const priority=p==='/'?'1.0':p==='/en'?'0.8':isService?'0.9':'0.6';
   const changefreq=isHome?'weekly':'monthly';
-  const alts=origin&&isHome?`
+  const alts=isHome?`
     <xhtml:link rel="alternate" hreflang="es" href="${origin}/"/>
     <xhtml:link rel="alternate" hreflang="en" href="${origin}/en/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="${origin}/"/>`:'';
@@ -41,9 +40,9 @@ const sitemapUrls=publicPaths.map(p=>{
     <priority>${priority}</priority>
   </url>`;
 }).join('\n');
-await fs.writeFile('dist/robots.txt',`User-agent: *\nAllow: /\nSitemap: ${origin?`${origin}/sitemap.xml`:'/sitemap.xml'}\n`);
+await fs.writeFile('dist/robots.txt',`User-agent: *\nAllow: /\nSitemap: ${origin}/sitemap.xml\n`);
 await fs.writeFile('dist/sitemap.xml',`<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${origin?' xmlns:xhtml="http://www.w3.org/1999/xhtml"':''}>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 ${sitemapUrls}
 </urlset>
 `);

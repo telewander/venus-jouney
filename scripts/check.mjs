@@ -6,8 +6,10 @@ const htmlFiles=files.filter(x=>x.endsWith('.html'));assert.equal(htmlFiles.leng
 const titles=new Set();let images=0;
 for(const file of htmlFiles){const h=await fs.readFile(file,'utf8');assert.equal((h.match(/<h1(?:\s|>)/g)||[]).length,1,`${file}: exactly one H1`);const title=h.match(/<title>(.*?)<\/title>/)[1];assert(!titles.has(title),`Duplicate title: ${title}`);titles.add(title);assert(!h.includes('<!--app-->'));JSON.parse(h.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1]);for(const match of h.matchAll(/(?:src|href)="(\/[^"#?]*)"/g)){const url=match[1];if(url==='/'||url==='/en')continue;const target='dist'+url;const present=files.includes(target)||files.includes(target.replace(/\/$/,'')+'/index.html');assert(present,`${file}: missing local asset/link ${url}`);if(url.startsWith('/images/'))images++}assert(h.includes('contactvenusjourney@gmail.com'));assert(h.includes('https://wa.me/34644656260'));}
 const sitemap=await fs.readFile('dist/sitemap.xml','utf8');
-const locs=[...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(m=>new URL(m[1],'https://sitemap.local').pathname);
-assert.equal(locs.length,9,'sitemap should list all public pages');
+const rawLocs=[...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(m=>m[1]);
+assert.equal(rawLocs.length,9,'sitemap should list all public pages');
+for(const loc of rawLocs)assert.match(loc,/^https:\/\//,'sitemap loc must be an absolute HTTPS URL');
+const locs=rawLocs.map(l=>new URL(l).pathname);
 for(const p of ['/','/en/','/fotografia-familiar/','/fotografia-embarazo/','/fotografia-recien-nacido/','/video-familiar-bautizo/','/olgayadelina/','/javieraysergio/','/garaziaitoramets/']){
   assert(locs.includes(p),`sitemap missing ${p}`);
 }
